@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <title>Teste Turim</title>
+
+    <style>
+
+        .barra-superior {
+            margin-bottom: 20px;
+        }
+
+        .linha-entrada {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .container-principal {
+            display: flex;
+            gap: 25px;
+            align-items: flex-start;
+        }
+
+        .container-lista {
+            width: 300px;
+        }
+
+        .cabecalho-lista {
+            background-color: #c0c0c0;
+            padding: 6px;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+
+        .conteudo-lista {
+            min-height: 150px;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .json {
+            width: 600px;
+            height: 350px;
+            border: 1px solid;
+        }
+
+        .linha-pessoa {
+            display: flex;
+            gap: 2px;
+            align-items: stretch;
+            margin-bottom: 2px;
+            width: 100%;
+        }
+
+        .linha-pai .nome-pessoa,
+        .linha-pai .container-botao {
+            background-color: #d3d3d3;
+        }
+
+        .linha-filho .nome-pessoa,
+        .linha-filho .container-botao {
+            background-color: #e6e6e6;
+        }
+
+        .nome-pessoa {
+            flex: 3;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            box-sizing: border-box;
+            min-width: 0;
+        }
+
+        .container-botao {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            padding: 4px;
+        }
+
+        .container-botao button {
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .btn-adicionar-filho {
+            width: 40%;
+            display: block;
+            margin: 4px auto 10px auto;
+            cursor: pointer;
+        }
+
+    </style>
+
+</head>
+<body>
+
+    <div class="barra-superior">
+        <button type="button" id="btnGravar">Gravar</button>
+        <button type="button" id="btnLer">Ler</button>
+    </div>
+
+    <div class="linha-entrada">
+        <span>Nome</span>
+        <input type="text" id="entradaNome" style="width: 150px;">
+        <button type="button" id="btnIncluir">Incluir</button>
+    </div>
+
+    <div class="container-principal">
+        <div class="container-lista">
+            <div class="cabecalho-lista">Pessoas</div>
+            <ul class="conteudo-lista" id="listaPessoas"></ul>
+        </div>
+        <textarea class="json" id="saidaJSON" readonly></textarea>
+    </div>
+
+<script>
+    let dados = { pessoas: [] };
+
+    function atualizarJSON() {
+        document.getElementById('saidaJSON').value = JSON.stringify(dados, null, 8);
+    }
+
+    function renderizarLista() {
+        const lista = document.getElementById('listaPessoas');
+        lista.innerHTML = '';
+        dados.pessoas.forEach((pessoa, i) => {
+            lista.appendChild(criarItemPessoa(pessoa, i));
+        });
+        atualizarJSON();
+    }
+
+    function criarItemFilho(nomeFilho, indiceFilho, indicePai) {
+        const li = document.createElement('li');
+        li.className = 'item-pessoa';
+
+        const linhaDiv = document.createElement('div');
+        linhaDiv.className = 'linha-pessoa linha-filho';
+
+        const nomeSpan = document.createElement('span');
+        nomeSpan.className = 'nome-pessoa';
+        nomeSpan.textContent = '-' + nomeFilho;
+
+        const divBotao = document.createElement('div');
+        divBotao.className = 'container-botao';
+
+        const btnRemover = document.createElement('button');
+        btnRemover.type = 'button';
+        btnRemover.textContent = 'Remover Filho';
+        btnRemover.addEventListener('click', () => {
+            dados.pessoas[indicePai].filhos.splice(indiceFilho, 1);
+            renderizarLista();
+        });
+
+        divBotao.appendChild(btnRemover);
+        linhaDiv.appendChild(nomeSpan);
+        linhaDiv.appendChild(divBotao);
+        li.appendChild(linhaDiv);
+
+        return li;
+    }
+
+    function criarItemPessoa(pessoa, indice) {
+        const li = document.createElement('li');
+        li.className = 'item-pessoa';
+
+        const linhaDiv = document.createElement('div');
+        linhaDiv.className = 'linha-pessoa linha-pai';
+
+        const nomeSpan = document.createElement('span');
+        nomeSpan.className = 'nome-pessoa';
+        nomeSpan.textContent = pessoa.nome;
+
+        const divBotao = document.createElement('div');
+        divBotao.className = 'container-botao';
+
+        const btnRemover = document.createElement('button');
+        btnRemover.type = 'button';
+        btnRemover.textContent = 'Remover';
+        btnRemover.addEventListener('click', () => {
+            dados.pessoas.splice(indice, 1);
+            renderizarLista();
+        });
+
+        divBotao.appendChild(btnRemover);
+        linhaDiv.appendChild(nomeSpan);
+        linhaDiv.appendChild(divBotao);
+        li.appendChild(linhaDiv);
+
+        if (pessoa.filhos && pessoa.filhos.length > 0) {
+            const areaFilhos = document.createElement('div');
+            areaFilhos.className = 'area-filhos';
+            pessoa.filhos.forEach((filho, iFilho) => {
+                areaFilhos.appendChild(criarItemFilho(filho, iFilho, indice));
+            });
+            li.appendChild(areaFilhos);
+        }
+
+        const btnFilho = document.createElement('button');
+        btnFilho.type = 'button';
+        btnFilho.textContent = 'Adicionar filho';
+        btnFilho.className = 'btn-adicionar-filho';
+        btnFilho.addEventListener('click', () => {
+            const nomeFilho = prompt('Nome do filho:');
+            if (nomeFilho && nomeFilho.trim() !== '') {
+                // ALTERADO: Salva apenas a string, não um objeto
+                dados.pessoas[indice].filhos.push(nomeFilho.trim());
+                renderizarLista();
+            }
+        });
+        li.appendChild(btnFilho);
+
+        return li;
+    }
+
+    document.getElementById('btnIncluir').addEventListener('click', () => {
+        const entrada = document.getElementById('entradaNome');
+        const nome = entrada.value.trim();
+        if (nome === '') return;
+        dados.pessoas.push({ nome: nome, filhos: [] });
+        entrada.value = '';
+        renderizarLista();
+    });
+
+    document.getElementById('entradaNome').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') document.getElementById('btnIncluir').click();
+    });
+
+    document.getElementById('btnGravar').addEventListener('click', () => {
+        localStorage.setItem('turimDados', JSON.stringify(dados));
+        alert('Dados gravados com sucesso!');
+    });
+
+    document.getElementById('btnLer').addEventListener('click', () => {
+        const salvo = localStorage.getItem('turimDados');
+        if (salvo) {
+            dados = JSON.parse(salvo);
+            renderizarLista();
+            alert('Dados lidos com sucesso!');
+        } else {
+            alert('Nenhum dado salvo encontrado.');
+        }
+    });
+
+    atualizarJSON();
+</script>
+
+</body>
+</html>
