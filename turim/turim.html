@@ -233,19 +233,27 @@
     });
 
     document.getElementById('btnGravar').addEventListener('click', () => {
-        localStorage.setItem('turimDados', JSON.stringify(dados));
-        alert('Dados gravados com sucesso!');
+    fetch('processa.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dados)
+    })
+    .then(res => res.json())
+    .then(retorno => {
+        if (retorno.success) alert('Sucesso!');
+        else alert('Erro ao salvar: ' + retorno.msg);
+        });
     });
 
     document.getElementById('btnLer').addEventListener('click', () => {
-        const salvo = localStorage.getItem('turimDados');
-        if (salvo) {
-            dados = JSON.parse(salvo);
-            renderizarLista();
-            alert('Dados lidos com sucesso!');
-        } else {
-            alert('Nenhum dado salvo encontrado.');
-        }
+    fetch('processa.php')
+    .then(res => res.json())
+    .then(jsonDoBanco => {
+        dados = jsonDoBanco;
+        renderizarLista();
+        alert('Sucesso!');
+    })
+    .catch(err => alert('Erro ao ler dados: ' + err));
     });
 
     atualizarJSON();
