@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from conexaoAPI import request_api
+from db_configs.data_manipulation import insert_all
 
 
 def parsing_data(raw_data, currency="BRL"):
@@ -10,6 +11,7 @@ def parsing_data(raw_data, currency="BRL"):
         date_gmt3 = date - timedelta(hours=3)
 
         coin_dict = {
+            "id": coin["id"],
             "name": coin["name"],
             "symbol": coin["symbol"],
             "rank": coin["cmc_rank"],
@@ -29,5 +31,5 @@ def parsing_data(raw_data, currency="BRL"):
 
 data = request_api(100, "BRL")
 full_data = parsing_data(data)
-print(full_data)
+insert_all(full_data)
 
