@@ -1,5 +1,3 @@
-import json
-import os
 from datetime import datetime, timedelta
 from conexaoAPI import request_api
 
