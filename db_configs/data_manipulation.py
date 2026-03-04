@@ -18,7 +18,13 @@ def insert_crypto(session, coin):
     else:
         if crypto.infinite_supply != coin["infinite_supply"]:
             crypto.infinite_supply = coin["infinite_supply"]
-        if crypto.max_supply != coin["max_supply"]:
+
+        if (crypto.max_supply is None) != (coin["max_supply"] is None):
+            crypto.max_supply = coin["max_supply"]
+        # O round foi necessário pois usamos 2 casas no banco. Tentei inúmeras formas, mesmo com ambos sendo floats
+        # sempre dava algum erro e alguns valores identicos davam triger na condição. Assim funcionou nos testes.
+        # Ideal é escrever alguns testes com valores arredondados e testar melhor.
+        elif coin["max_supply"] is not None and round(float(crypto.max_supply), 2) != round(float(coin["max_supply"]), 2):
             crypto.max_supply = coin["max_supply"]
 
     return crypto.id
