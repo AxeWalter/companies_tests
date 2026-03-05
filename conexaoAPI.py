@@ -7,8 +7,6 @@ load_dotenv()
 API_KEY = os.getenv("API_KEY")
 
 
-# Para alterar a quantidade de Cryptos extraídas, modificar o parâmetro total_number_of_cryptos
-# Para alterar a moeda, alterar a abreviação BRL para moeda desejada (por exemplo, USD para dólar)
 def request_api(total_number_of_cryptos, currency):
     url = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest"
     parameters = {
