@@ -1,6 +1,7 @@
 from conexaoAPI import request_api
 from extracao import parsing_data
 from db_configs.data_manipulation import insert_all
+from db_configs.connection import Base, engine
 import logging
 import schedule
 import time
@@ -18,6 +19,8 @@ CHECK_DELAY_FOR_SCHEDULE = 60  # Define de quanto em quanto tempo o script vai c
 
 def main():
     try:
+        Base.metadata.create_all(bind=engine)
+
         logging.info("Iniciando coleta de dados da API...")
         api_data = request_api(NUMBER_OF_CRYPTOS, CURRENCY)
         logging.info(f"{len(api_data)} coletados com sucesso!")
