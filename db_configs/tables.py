@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, Boolean, ForeignKey, Numeric, DateTime
+from sqlalchemy import Column, String, Integer, Boolean, ForeignKey, Numeric, DateTime, event, DDL
 from db_configs.connection import Base
 
 
@@ -29,4 +29,81 @@ class Monitoring(Base):
     volume_24h = Column(Numeric(20,2))
     percent_change_24h = Column(Numeric(5,2))
     timestamp = Column(DateTime, nullable=False)
+
+
+total_mkt_cap_view = DDL ("""
+    CREATE OR REPLACE VIEW total_mkt_cap_view AS
+    SELECT SUM(market_cap) AS total_mkt_cap, timestamp
+    FROM monitoring
+    GROUP BY timestamp;
+""")
+
+total_volume_24h_view = DDL("""
+    CREATE OR REPLACE VIEW total_volume_24h_view AS
+    SELECT SUM(volume_24h) AS total_volume_24h, timestamp
+    FROM monitoring
+    GROUP BY timestamp;
+""")
+
+biggest_winner_view = DDL ("""
+    CREATE OR REPLACE VIEW biggest_winner_view AS
+    SELECT 
+        cryptos.name,
+        cryptos.symbol,
+        monitoring.percent_change_24h,
+        monitoring.timestamp
+    FROM monitoring
+    JOIN cryptos ON cryptos.id = monitoring.crypto_id
+    WHERE monitoring.percent_change_24h = (
+        SELECT MAX(percent_change_24h) FROM monitoring m2 WHERE m2.timestamp = monitoring.timestamp
+    );
+""")
+
+biggest_loser_view = DDL ("""
+    CREATE OR REPLACE VIEW biggest_loser_view AS
+    SELECT 
+        cryptos.name,
+        cryptos.symbol,
+        monitoring.percent_change_24h,
+        monitoring.timestamp
+    FROM monitoring
+    JOIN cryptos ON cryptos.id = monitoring.crypto_id
+    WHERE monitoring.percent_change_24h = (
+        SELECT MIN(percent_change_24h) FROM monitoring m2 WHERE m2.timestamp = monitoring.timestamp
+    );
+""")
+
+market_cap_dominance = DDL ("""
+    CREATE OR REPLACE VIEW market_cap_dominance AS
+    SELECT * FROM (
+        SELECT
+            cryptos.name,
+            cryptos.symbol,
+            monitoring.rank,
+            monitoring.market_cap
+        FROM cryptos
+        JOIN monitoring ON cryptos.id = monitoring.crypto_id
+        WHERE monitoring.timestamp = (SELECT MAX(timestamp) FROM monitoring)
+        ORDER BY monitoring.rank
+        LIMIT 10
+    ) top10
+        
+    
+    UNION ALL
+    
+    SELECT 
+        'Others' AS name,
+        'Others' AS symbol,
+        NULL AS rank,
+        SUM(market_cap) AS market_cap
+    FROM monitoring
+    WHERE rank > 10 AND timestamp = (SELECT MAX(timestamp) FROM monitoring);
+""")
+
+event.listen(Base.metadata, "after_create", total_mkt_cap_view)
+event.listen(Base.metadata, "after_create", total_volume_24h_view)
+event.listen(Base.metadata, "after_create", biggest_winner_view)
+event.listen(Base.metadata, "after_create", biggest_loser_view)
+event.listen(Base.metadata, "after_create", market_cap_dominance)
+
 
