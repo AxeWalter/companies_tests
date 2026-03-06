@@ -61,7 +61,7 @@ SCHEDULE_MINUTES_INTERVAL = 30  # Define de quantos em quantos minutos o script 
 CHECK_DELAY_FOR_SCHEDULE = 60  # Define de quanto em quanto tempo o script vai checar o tempo para ver se passaram 30m.
 ```
 
-Assim, o padrão é executar a cada 30m e extrair 200 criptomoedas por API call formatadas no Real Brasileiro (BRL).
+O padrão é executar a cada 30m e extrair 200 criptomoedas por API call formatadas no Real Brasileiro (BRL).
 
 ## Execução
 `python main.py`
