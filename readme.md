@@ -74,12 +74,44 @@ O padrão é executar a cada 30m e extrair 200 criptomoedas por API call formata
 O script irá:
 - Criar as tabelas e views no banco de dados caso não existam
 - Chamar a API, coletar e limpar os dados
-- Inserir os dados no banco de dados e atualizar as views
+- Inserir os dados no banco de dados
 - Agendar a próxima execução para o que for definido em `SCHEDULE_MINUTES_INTERVAL`
 
 Na primeira execução um arquivo `log.log` será gerado na raiz do projeto para manter os logs de execução. O `filemode`
 desse arquivo está definido como `a`, logo, os logs são históricos. Caso deseje logs apenas da última execução, alterar
 `logging.basicConfig` em `main.py` para `w`.
+
+## Power BI
+
+### Conexão
+1. Abra o arquivo `onetopiaBI.pbit` no Power BI Desktop
+2. Inicialmente o arquivo vai carregar apenas a estrutura, sem os dados
+3. Siga o caminho **Transformar Dados** → **Configurações da Fonte de Dados**
+4. Selecione a conexão e clique em **Alterar Fonte**
+5. Inserir o servidor e nome do seu banco de dados PostgreSQL
+6. Feche essa janela e clique em **Fechar e Aplicar** para salvar as alterações
+7. Power BI vai carregar os dados e automaticamente atualizar as visualizações
+
+### Funcionalidades
+
+- Barra superior com informações globais como:
+  - Valor de mercado atual agregado (top 200)
+  - Variação desse valor de mercado nos últimos 30m
+  - Volume total nas últimas 24h
+  - Preço atual da Bitcoin em Real
+  - Preço atual da Ethereum em Real
+  - Criptomoeda com maior valorização nas últimas 24h
+  - Criptomoeda com maior desvalorização nas últimas 24h
+- Gráfico com últimos 5 valores de mercado agregados
+- Gráfico de dominância de mercado, mostrando a porcentagem de valor de mercado das top 10 criptomoedas e agregando as
+demais como _Others_ (considera da 11-200)
+- Gráfico das 5 maiores valorizações nas últimas 24h
+- Gráfico das 5 maiores desvalorizações nas últimas 24h
+- Gráfico de histórico de preço filtrado por criptomoeda e período
+
+**Limitação Conhecida**: o _slicer_ de período utilizado para filtrar o gráfico de histórico utiliza horário UTC por
+padrão. Logo, considerando GMT-3 (Brasil), o slicer sempre parte de 3h na frente. Para ter precisão, sempre adicione
+3h a mais no horário desejado.
 
 ## Dependências
 ```
